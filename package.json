@@ -1,0 +1,31 @@
+{
+  "name": "live-quiz",
+  "version": "1.0.0",
+  "description": "Live Quiz Multiplayer — kuis real-time tanpa library eksternal",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "dev": "next dev -p 3500",
+    "build": "next build",
+    "start": "next start -p 3500",
+    "lint": "eslint .",
+    "check": "node scripts/check.mjs",
+    "self-test": "node scripts/self-test.mjs",
+    "test": "node scripts/self-test.mjs",
+    "backup": "node scripts/backup-db.mjs"
+  },
+  "dependencies": {
+    "@heroicons/react": "2.2.0",
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.10"
+  }
+}

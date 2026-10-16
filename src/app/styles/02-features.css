@@ -1,0 +1,1208 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAPISAN UI v2 — mode ujian, matematika, gambar, palet simbol, kontrol host
+   ═══════════════════════════════════════════════════════════════════════════
+   Token baru di bawah ini MENAMBAH, bukan mengganti, token lama. Setiap warna
+   aksen punya satu peran tetap supaya UI tidak jadi variasi acak:
+
+     indigo  #6366f1  (--primary)        → aksi utama, navigasi
+     violet  #a78bfa  (--accent-violet)  → notasi matematika (satu-satunya)
+     cyan    #22d3ee  (--exam-accent)    → mode ujian / batas waktu total
+     amber   #fbbf24  (--host-accent)    → kontrol host & lobby terkunci
+     emerald #34d399  (--success)        → jawaban benar
+     rose    #f87171  (--error)          → jawaban salah & aksi destruktif
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --exam-accent: #22d3ee;
+  --exam-accent-soft: rgba(34, 211, 238, 0.14);
+  --exam-accent-border: rgba(34, 211, 238, 0.45);
+  --host-accent: #fbbf24;
+  --host-accent-soft: rgba(251, 191, 36, 0.13);
+  --host-accent-border: rgba(251, 191, 36, 0.45);
+  --math-ink: #ddd6fe;
+  --math-rule: rgba(196, 181, 253, 0.85);
+  --math-surface: rgba(167, 139, 250, 0.1);
+  --math-border: rgba(167, 139, 250, 0.3);
+}
+
+/* ─── Render matematika ────────────────────────────────────────────────── */
+.math-text {
+  /* Notasi matematika memakai jenis huruf serif + angka yang mudah dibedakan
+     (tabular) supaya pecahan sejajar dan tidak "melompat" antar baris. */
+  font-family: "Cambria Math", Cambria, Georgia, "Times New Roman", serif;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: -0.52em;
+  margin: 0 0.18em;
+  font-size: 0.94em;
+  line-height: 1.15;
+}
+
+.math-num {
+  display: block;
+  padding: 0 0.22em 0.08em;
+  border-bottom: 1.4px solid var(--math-rule);
+}
+
+.math-den {
+  display: block;
+  padding: 0.08em 0.22em 0;
+}
+
+.math-mixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+}
+
+.math-root {
+  display: inline-flex;
+  align-items: flex-start;
+  margin: 0 0.12em;
+}
+
+.math-root-sign {
+  font-size: 1.12em;
+  line-height: 1;
+  color: var(--math-ink);
+  transform: translateY(0.02em);
+}
+
+.math-root-index {
+  font-size: 0.62em;
+  line-height: 1;
+  margin-left: -0.44em;
+  margin-right: 0.06em;
+  transform: translateY(-0.35em);
+}
+
+.math-sqrt-body {
+  /* Garis atas akar: batas atas tipis yang mengikuti isi (tidak perlu SVG). */
+  padding: 0.14em 0.24em 0.06em;
+  border-top: 1.4px solid var(--math-rule);
+  transform: skewX(-6deg);
+  transform-origin: left bottom;
+}
+
+.math-sqrt-body > * {
+  /* Isi akar tidak ikut miring — hanya "atapnya" yang dimiringkan. */
+  display: inline-block;
+  transform: skewX(6deg);
+}
+
+.math-sup-wrap,
+.math-sub-wrap {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.math-sup {
+  font-size: 0.72em;
+  line-height: 1;
+  margin-left: 0.06em;
+  color: var(--math-ink);
+}
+
+.math-sub {
+  font-size: 0.72em;
+  line-height: 1;
+  margin-left: 0.06em;
+  color: var(--math-ink);
+}
+
+.math-abs {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.06em;
+  padding: 0 0.06em;
+}
+
+.math-abs-bar {
+  color: var(--math-ink);
+  font-size: 1.12em;
+  line-height: 1;
+}
+
+.math-preview {
+  border: 1px dashed var(--math-border);
+  background: var(--math-surface);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 16px;
+}
+
+/* Umpan balik "jawaban terkirim" — tetap satu keluarga dengan .feedback,
+   hanya nada warnanya lebih tenang karena bukan benar/salah. */
+.feedback-waiting {
+  border-color: rgba(129, 140, 248, 0.45);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* Tombol "Masuk" di navbar (teks) — saudara .nav-profile. */
+.nav-login {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Pembungkus teks soal — memastikan notasi matematika tidak memecah tata letak. */
+.question-text {
+  margin: 0;
+}
+
+.question-text .card-title,
+.question-text h1 {
+  margin: 0;
+}
+
+.math-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.math-preview-body {
+  font-size: 16px;
+  min-height: 26px;
+}
+
+.math-preview-plain {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+/* ─── Gambar soal & opsi ───────────────────────────────────────────────── */
+.question-image-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 14px;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  border-radius: 14px;
+}
+
+.question-image {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 14px;
+}
+
+.question-image-btn .question-image {
+  margin-bottom: 0;
+}
+
+.option-thumb {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.option-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.img-zoom-img {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.img-zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 22px;
+  background: rgba(2, 6, 23, 0.9);
+}
+
+/* Pemilih gambar di editor */
+.img-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.img-picker.is-compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0;
+  padding-left: 42px;
+}
+
+.img-picker-thumb {
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: zoom-in;
+  align-self: flex-start;
+}
+
+.img-picker-thumb img {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  max-height: 130px;
+  object-fit: contain;
+}
+
+.img-picker.is-compact .img-picker-thumb img {
+  max-width: 74px;
+  max-height: 60px;
+}
+
+.img-picker-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.img-picker-name {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 170px;
+}
+
+.img-picker-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.14s ease, color 0.14s ease;
+}
+
+.img-picker.is-compact .img-picker-drop {
+  padding: 8px 11px;
+  font-size: 12px;
+}
+
+.img-picker-drop:hover {
+  border-color: rgba(129, 140, 248, 0.6);
+  color: var(--text-primary);
+}
+
+.img-picker-drop.is-busy {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.img-picker-error {
+  margin: 0;
+  font-size: 12.5px;
+  color: #fca5a5;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Pratinjau di editor */
+.question-preview {
+  margin-top: 18px;
+}
+
+.preview-text {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 8px 0 10px;
+}
+
+.preview-options {
+  display: grid;
+  gap: 8px;
+}
+
+.option-card.is-preview-correct {
+  border-color: rgba(52, 211, 153, 0.65);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.option-card.is-preview-correct .correct-tag {
+  margin-left: auto;
+}
+
+.preview-explanation {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid var(--math-border);
+}
+
+.pane-divider {
+  margin: 20px 0 16px;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Judul kelompok di dalam daftar template (mis. "Dari komunitas"). */
+.library-group-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+}
+
+.field-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.qlist-mark {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.opt-row.is-stacked {
+  flex-direction: column;
+  align-items: stretch;
+  cursor: default;
+}
+
+.opt-row-main {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+}
+
+.opt-badge-btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.opt-badge-btn:hover {
+  background: rgba(129, 140, 248, 0.4);
+}
+
+.opt-check {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* ─── Palet simbol ─────────────────────────────────────────────────────── */
+.symbol-palette {
+  margin-top: 12px;
+  padding: 12px 13px;
+  border-radius: 12px;
+  background: var(--math-surface);
+  border: 1px dashed var(--math-border);
+}
+
+.symbol-palette-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 9px;
+}
+
+.symbol-palette-note {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.symbol-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.symbol-btn {
+  width: 38px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--math-ink);
+  font-family: "Cambria Math", Cambria, Georgia, serif;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.symbol-btn:hover:not(:disabled) {
+  border-color: rgba(167, 139, 250, 0.65);
+  background: rgba(167, 139, 250, 0.18);
+}
+
+.symbol-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.symbol-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.symbol-templates .btn {
+  color: var(--math-ink);
+  border-color: var(--math-border);
+}
+
+/* ─── Panel pengaturan kuis ────────────────────────────────────────────── */
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-cards {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  text-align: left;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.settings-card:hover:not(:disabled) {
+  border-color: rgba(129, 140, 248, 0.5);
+}
+
+.settings-card.is-active {
+  border-color: var(--primary-hover);
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--text-primary);
+}
+
+.settings-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.settings-card-desc {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 2px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.toggle-row.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-row input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+  cursor: inherit;
+}
+
+.toggle-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.toggle-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.toggle-hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.num-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.num-field .input {
+  width: 110px;
+}
+
+.num-field-suffix {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.num-pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.num-pair-dash {
+  color: var(--text-muted);
+}
+
+/* ─── Mode ujian ───────────────────────────────────────────────────────── */
+.exam-progress {
+  flex: 1;
+  min-width: 150px;
+}
+
+.exam-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.exam-progress-track {
+  height: 7px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.exam-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--exam-accent), var(--primary));
+  transition: width 0.3s ease;
+}
+
+/* Bar tipis sisa waktu TOTAL — sengaja bukan ring kedua yang bersaing. */
+.total-time {
+  margin: 10px 0 14px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: var(--exam-accent-soft);
+  border: 1px solid var(--exam-accent-border);
+}
+
+.total-time.is-critical {
+  background: rgba(248, 113, 113, 0.13);
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.total-time-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+}
+
+.total-time-head strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.total-time.is-critical .total-time-head strong {
+  color: #fca5a5;
+}
+
+.total-time-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.total-time-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--exam-accent);
+  transition: width 0.5s linear;
+}
+
+.total-time.is-critical .total-time-fill {
+  background: var(--error);
+}
+
+/* Kilat benar/salah di mode ujian (≤1,2 detik) */
+.exam-flash {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--exam-accent-soft);
+  border: 1px solid var(--exam-accent-border);
+  color: #a5f3fc;
+  animation: exam-flash-in 0.16s ease;
+}
+
+.exam-flash-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.exam-flash-text {
+  flex: 1;
+  min-width: 120px;
+}
+
+.exam-flash-detail {
+  flex-basis: 100%;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.exam-flash-correct {
+  background: rgba(52, 211, 153, 0.16);
+  border-color: rgba(52, 211, 153, 0.55);
+  color: #6ee7b7;
+}
+
+.exam-flash-wrong {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+}
+
+@keyframes exam-flash-in {
+  from { transform: scale(0.97); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Layar hasil ujian */
+.exam-result-card {
+  border-width: 1.5px;
+}
+
+.exam-result-card.is-passed {
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+.exam-result-card.is-failed {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.exam-result-scope {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+}
+
+.exam-result-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 118px;
+  height: 118px;
+  border-radius: 26px;
+  background: var(--exam-accent-soft);
+  border: 1.5px solid var(--exam-accent-border);
+}
+
+.exam-result-card.is-passed .exam-result-grade {
+  background: rgba(52, 211, 153, 0.14);
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+.exam-result-card.is-failed .exam-result-grade {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.exam-result-grade-value {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.exam-result-grade-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.exam-result-meta {
+  flex: 1;
+  min-width: 220px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.exam-result-meta p {
+  margin: 0;
+}
+
+.exam-result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.exam-result-row {
+  padding: 13px 14px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.exam-result-row.is-correct {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(52, 211, 153, 0.06);
+}
+
+.exam-result-row.is-unanswered {
+  border-style: dashed;
+}
+
+.exam-result-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.exam-result-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--text-secondary);
+}
+
+.exam-result-tag.is-correct {
+  background: rgba(52, 211, 153, 0.2);
+  color: #6ee7b7;
+}
+
+.exam-result-tag.is-wrong {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fca5a5;
+}
+
+.exam-result-answers {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.label-inline {
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-right: 3px;
+}
+
+/* Tabel rekap host (mode ujian) */
+.exam-table-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+}
+
+.exam-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.exam-table th,
+.exam-table td {
+  padding: 9px 11px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  vertical-align: middle;
+}
+
+.exam-table th {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.exam-table tr.is-passed td:last-child {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.exam-table tr.is-failed td:last-child {
+  color: #fca5a5;
+  font-weight: 700;
+}
+
+/* ─── Kontrol host baru ────────────────────────────────────────────────── */
+.host-controls {
+  margin-top: 20px;
+}
+
+.host-controls.is-compact {
+  margin-top: 18px;
+}
+
+.host-control-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.host-control-grid .btn {
+  font-size: 13.5px;
+}
+
+.kick-chip {
+  padding-right: 5px;
+}
+
+.kick-btn {
+  margin-left: 4px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: none;
+  background: rgba(248, 113, 113, 0.22);
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.kick-btn:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.42);
+}
+
+.kick-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rules-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.rules-item {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 4px 12px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--host-accent-soft);
+  border: 1px solid var(--host-accent-border);
+}
+
+.rules-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--host-accent);
+  align-self: center;
+}
+
+.rules-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.rules-hint {
+  grid-column: 2;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.alert-warning {
+  background: var(--host-accent-soft);
+  border: 1px solid var(--host-accent-border);
+  color: #fcd34d;
+}
+
+@media (max-width: 640px) {
+  .rules-item {
+    grid-template-columns: 78px 1fr;
+  }
+
+  .host-control-grid .btn {
+    flex: 1 1 calc(50% - 9px);
+  }
+
+  .exam-result-grade {
+    width: 96px;
+    height: 96px;
+    border-radius: 20px;
+  }
+
+  .exam-result-grade-value {
+    font-size: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-flash,
+  .exam-progress-fill,
+  .total-time-fill,
+  .math-sup,
+  .math-sub {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .math-sqrt-body,
+  .math-sqrt-body > * {
+    transform: none;
+  }
+}
+
+/* ─── Perpustakaan gambar (editor) ─────────────────────────────────────── */
+.img-library {
+  margin-top: 12px;
+  padding: 13px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.img-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.img-library-item {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.img-library-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.img-library-del {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: none;
+  background: rgba(2, 6, 23, 0.78);
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.img-library-del:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.85);
+  color: #fff;
+}
+
+.img-library-del:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Riwayat sesi ─────────────────────────────────────────────────────── */
+.archive-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.archive-row + .archive-row {
+  margin-top: 10px;
+}
+
+.archive-main {
+  flex: 1;
+  min-width: 220px;
+}
+
+.archive-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.archive-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.archive-stats {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.archive-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.archive-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.archive-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}

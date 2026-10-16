@@ -1,0 +1,453 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   YUE QUIZ — beranda. Dimuat paling akhir supaya bisa menimpa komponen dasar.
+   Hanya CSS murni; animasi ringan (transform/opacity) dan dimatikan untuk
+   pengguna yang meminta reduced motion.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tautan berbentuk tombol/kartu tidak boleh bergaris bawah. */
+.home a,
+.home a:hover,
+.nav a,
+.nav a:hover,
+.cta-band a,
+.site-footer a,
+a.btn,
+a.btn:hover {
+  text-decoration: none;
+}
+
+/* ─── Hero ─────────────────────────────────────────────────────────────── */
+.home {
+  padding-top: 32px;
+}
+
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 48px;
+  align-items: center;
+  padding: 24px 0 8px;
+}
+
+.home-hero-copy {
+  min-width: 0;
+}
+
+.home-title {
+  margin: 20px 0 0;
+  font-size: clamp(38px, 6vw, 64px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.home-title-accent {
+  background: linear-gradient(90deg, #a5b4fc 0%, #f0abfc 50%, #67e8f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-lede {
+  margin: 20px 0 0;
+  max-width: 520px;
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.home-actions .btn {
+  gap: 8px;
+}
+
+/* Tombol utama bercahaya halus; tidak berkedip. */
+.btn-glow {
+  box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.7);
+}
+
+.btn-glow:hover:not(:disabled) {
+  box-shadow: 0 14px 36px -10px rgba(124, 58, 237, 0.85);
+  transform: translateY(-1px);
+}
+
+/* ─── Pratinjau soal (hero, kanan) ─────────────────────────────────────── */
+.home-preview {
+  position: relative;
+  min-width: 0;
+}
+
+.home-preview-card {
+  position: relative;
+  padding: 22px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  transform: rotate(-1.2deg);
+}
+
+.home-preview-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.home-chip {
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.16);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.home-timer {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #022c22;
+  background: linear-gradient(135deg, #34d399, #22d3ee);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-preview-q {
+  margin: 18px 0 14px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.home-preview-opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.home-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  touch-action: manipulation;
+}
+
+.home-opt:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(129, 140, 248, 0.5);
+}
+
+.home-opt:active {
+  transform: scale(0.98);
+}
+
+.home-opt.is-picked {
+  color: #ffffff;
+  background: rgba(99, 102, 241, 0.28);
+  border-color: rgba(129, 140, 248, 0.8);
+}
+
+.home-opt-letter {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.home-preview-hint {
+  margin: 14px 0 0;
+  min-height: 1.4em;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+/* ─── Langkah cara kerja ───────────────────────────────────────────────── */
+.home-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.home-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-step-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.18);
+}
+
+.home-step-num {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.home-step-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── Seksi umum ───────────────────────────────────────────────────────── */
+.home-section {
+  margin-top: 48px;
+}
+
+.home-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.home-section-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.home-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-hover);
+  text-decoration: none;
+}
+
+.home-more:hover {
+  color: #c7d2fe;
+}
+
+/* ─── Gabung + mulai ───────────────────────────────────────────────────── */
+.home-join-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 48px;
+  align-items: stretch;
+}
+
+.home-start-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.home-start-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  font: inherit;
+  text-align: left;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  touch-action: manipulation;
+}
+
+.home-start-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(129, 140, 248, 0.4);
+}
+
+.home-start-item:active {
+  transform: scale(0.99);
+}
+
+.home-start-item:focus-visible {
+  outline: 2px solid var(--primary-hover);
+  outline-offset: 2px;
+}
+
+.home-start-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.16);
+}
+
+.home-start-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.home-start-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.home-start-item:hover .home-start-arrow {
+  transform: translateX(3px);
+  color: #c7d2fe;
+}
+
+/* ─── Kenapa Yue Quiz ──────────────────────────────────────────────────── */
+.home-why {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.home-why-card {
+  padding: 22px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-why-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  color: #f0abfc;
+  background: rgba(167, 139, 250, 0.16);
+}
+
+.home-why-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.home-why-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ─── Responsif ────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .home-preview-card {
+    transform: none;
+    max-width: 520px;
+  }
+
+  .home-join-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .home {
+    padding-top: 20px;
+  }
+
+  .home-steps,
+  .home-why {
+    grid-template-columns: 1fr;
+  }
+
+  .home-section {
+    margin-top: 36px;
+  }
+
+  .home-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .home-title {
+    font-size: clamp(34px, 9vw, 44px);
+  }
+
+  .home-preview-opts {
+    grid-template-columns: 1fr;
+  }
+
+  .home-join-grid {
+    margin-top: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-opt,
+  .home-start-item,
+  .home-start-arrow,
+  .btn-glow:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+}
